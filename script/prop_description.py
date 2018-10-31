@@ -98,7 +98,7 @@ def get_prop_value_category(property):
 # get information from identifier
 def get_identifier_attr_query(property):
     identifier_attr_query =  \
-        'SELECT DISTINCT ?identifier ?id_l ?desc ?type ? WHERE \
+        'SELECT DISTINCT ?identifier ?id_l ?desc ?type WHERE \
         {\
           ?source wdt:' + property + '?prop_value.\
           ?source ?id ?id_value.\
@@ -136,11 +136,11 @@ def process_property_attr_query(desc_template, data, mapping):
         variable = dict()
         variable["wikidata_identifier"] = item["identifier"]["value"]
         prop_id = variable["wikidata_identifier"].split("/")[-1]
-        variable["external_source_ns"] = mapping[prop_id]
+        variable["external_source_ns"] = mapping.get(prop_id, "")
         variable["name"] = item["id_l"]["value"]
         variable["description"] = item["desc"]["value"]
         variable["semantic_type"] = "string"
-        variable["external_identifier"] = ""
+        # variable["external_identifier"] = ""
         variable["named_entity"] = list()
         variable["temporal_coverage"]= \
             { 
@@ -156,14 +156,15 @@ def process_property_attr_query(desc_template, data, mapping):
 
 def get_ext_id_namespace_query(property):
     ext_id_namespace_query = \
-    'SELECT DISTINCT ?p (group_concat(?v; separator = ';') as ?v_concat) WHERE \
+    'SELECT DISTINCT ?p (group_concat(?v; separator = ";") as ?v_concat) WHERE \
     { \
-        ?source \
-        wdt: P1546 ?prop_value. \
+        ?source wdt:' + property + ' ?prop_value. \
         ?source ?p ?v. \
             BIND(STR(?p) AS ?string ). \
         filter(regex(str(?p), "direct-normalized")) \
     } group by ?p'
+
+    return ext_id_namespace_query
 
 
 def process_ext_id_namespace_query(data):
@@ -174,12 +175,15 @@ def process_ext_id_namespace_query(data):
         namespace = urls[0].rsplit('/', 1)[0]
         mapping[external_id] = namespace
 
+    return mapping
+
 
 if __name__ == '__main__':
     property = read_args()
 
     property_attr_query_encoded = encode_url(get_property_attr_query(property))
     identifier_attr_query_encoded = encode_url(get_identifier_attr_query(property))
+    ext_id_namespace_query_encoded = encode_url(get_ext_id_namespace_query(property))
 
     prefix = 'https://query.wikidata.org/sparql?query='
     format = '&format=json'
@@ -190,10 +194,17 @@ if __name__ == '__main__':
     print("identifier_attr ", prefix + identifier_attr_query_encoded + format)
     identifier_attr_query = urllib.request.Request(prefix + identifier_attr_query_encoded + format)
 
+    print("identifier namespace mapping ", prefix + ext_id_namespace_query_encoded + format)
+    ext_id_namespace_query = urllib.request.Request(prefix + ext_id_namespace_query_encoded + format)
+
+    # -------------------------- #
+
     desc_template = read_template()
 
     desc_template = fill_description(desc_template, get_query_result(property_attr_query))
 
-    desc_template = process_property_attr_query(desc_template, get_query_result(identifier_attr_query))
+    mapping = process_ext_id_namespace_query(get_query_result(ext_id_namespace_query))
+
+    desc_template = process_property_attr_query(desc_template, get_query_result(identifier_attr_query), mapping)
 
     pprint(desc_template)

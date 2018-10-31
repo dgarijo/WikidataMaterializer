@@ -20,7 +20,8 @@
             "name": "",
             "description": "",            
             "semantic_type": [],
-            "external_identifier": "",
+            "wikidata_identifier":"",
+            "external_source_ns": "",
             "named_entity": [],            
             "temporal_coverage": 
             { 

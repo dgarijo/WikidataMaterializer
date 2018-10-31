@@ -15,7 +15,7 @@
       {
             "name": "category",
             "description": "the categories of the entities associated with the given property",
-            "semantic_type": [],
+            "semantic_type": ["string"],
             "external_identifier": "",
             "named_entity": [],
             "temporal_coverage":
@@ -41,7 +41,7 @@
       {
             "name": "sub_label",
             "description": "the entity label that the entities associated with the given property",
-            "semantic_type": [],
+            "semantic_type": ["string"],
             "external_identifier": "",
             "named_entity": [],
             "temporal_coverage":
@@ -54,7 +54,7 @@
       {
             "name": "value_label",
             "description": "the value label of the property value",
-            "semantic_type": [],
+            "semantic_type": ["string"],
             "external_identifier": "",
             "named_entity": [],
             "temporal_coverage":
