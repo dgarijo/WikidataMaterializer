@@ -55,6 +55,7 @@ for prop in properties:
         retrievable += 1
         print(prop, " ", count_map[prop])
     except Exception as e:
+        print("error property ", prop)
         unretrievable += 1
         continue
 
